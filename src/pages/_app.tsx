@@ -1,20 +1,31 @@
-import { type AppType } from "next/app";
-import { type Session } from "next-auth";
-import { SessionProvider } from "next-auth/react";
-
-import { trpc } from "../utils/trpc";
-
 import "../styles/globals.css";
 
-const MyApp: AppType<{ session: Session | null }> = ({
+import type { AppProps } from "next/app";
+import { ChakraProvider } from "@chakra-ui/react";
+import type {Session} from "@supabase/auth-helpers-react";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { trpc } from "../utils/trpc";
+import { useState } from "react";
+
+function MyApp({
   Component,
-  pageProps: { session, ...pageProps },
-}) => {
+  pageProps,
+}: AppProps<{
+  initialSession: Session;
+}>) {
+  const [supabase] = useState(() => createBrowserSupabaseClient());
+
   return (
-    <SessionProvider session={session}>
-      <Component {...pageProps} />
-    </SessionProvider>
+    <ChakraProvider>
+      <SessionContextProvider
+        supabaseClient={supabase}
+        initialSession={pageProps.initialSession}
+      >
+        <Component {...pageProps} />
+      </SessionContextProvider>
+    </ChakraProvider>
   );
-};
+}
 
 export default trpc.withTRPC(MyApp);
