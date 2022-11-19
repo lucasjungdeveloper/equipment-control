@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 // @ts-check
 import { z } from "zod";
 
@@ -7,21 +6,9 @@ import { z } from "zod";
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const serverSchema = z.object({
+  SUPABASE_SERVICE_KEY: z.string(),
   DATABASE_URL: z.string().url(),
   NODE_ENV: z.enum(["development", "test", "production"]),
-  NEXTAUTH_SECRET:
-    process.env.NODE_ENV === "production"
-      ? z.string().min(1)
-      : z.string().min(1).optional(),
-  NEXTAUTH_URL: z.preprocess(
-    // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
-    // Since NextAuth automatically uses the VERCEL_URL if present.
-    (str) => process.env.VERCEL_URL ?? str,
-    // VERCEL_URL doesnt include `https` so it cant be validated as a URL
-    process.env.VERCEL ? z.string() : z.string().url(),
-  ),
-  DISCORD_CLIENT_ID: z.string(),
-  DISCORD_CLIENT_SECRET: z.string(),
 });
 
 /**
@@ -31,6 +18,8 @@ export const serverSchema = z.object({
  */
 export const clientSchema = z.object({
   // NEXT_PUBLIC_BAR: z.string(),
+  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
 });
 
 /**
@@ -41,16 +30,6 @@ export const clientSchema = z.object({
  */
 export const clientEnv = {
   // NEXT_PUBLIC_BAR: process.env.NEXT_PUBLIC_BAR,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
 };
-
-
-const supabaseUrl = "https://tkbtlnpqsqpfajxufcld.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrYnRsbnBxc3FwZmFqeHVmY2xkIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjY1NjczMDIsImV4cCI6MTk4MjE0MzMwMn0.3NdfBbIjdBCWhNlDsBf9o1P5CHN5SaapbSnBRGKr9us";
-
-// const supabaseUrl = process.env.SUPABASE_URL;
-
-// const supabaseAnonKey = process.env.SUPABASE_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
